@@ -1,0 +1,371 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSE Assessment &mdash; Live Dashboard</title><style>
+:root{--ink:#141B2D;--paper:#F7F8FA;--card:#fff;--rule:#E3E6EB;--red:#BA0C2F;--teal:#1F7A6E;--mut:#666E7D;--gold:#C8A951}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 24px 80px}
+header{border-bottom:3px solid var(--red);padding-bottom:16px}
+.eyebrow{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--red);font-weight:700}
+h1{font-family:ui-serif,Georgia,serif;font-weight:600;font-size:clamp(27px,4vw,40px);line-height:1.1;margin:8px 0 6px;letter-spacing:-.01em}
+.sub{color:var(--mut);font-size:15px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--teal)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block}
+nav{display:flex;gap:2px;flex-wrap:wrap;margin-top:18px;border-bottom:1px solid var(--rule)}
+nav button{padding:11px 17px;background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);font:600 14px inherit;cursor:pointer}
+nav button:hover{color:var(--ink)} nav button.on{color:var(--red);border-bottom-color:var(--red)}
+.view{display:none} .view.on{display:block}
+.shead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:32px 0 16px}
+.shead h2{font-family:ui-serif,Georgia,serif;font-size:25px;font-weight:600;margin:0}
+.shead .tag{font-size:12.5px;color:var(--mut)}
+h3.lbl{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:30px 0 12px}
+.measures{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.m{background:var(--card);padding:15px 18px;display:grid;grid-template-columns:44px 1fr auto auto;align-items:center;gap:16px}
+.mcode{font:700 11px ui-monospace,monospace;color:var(--mut)}
+.mlabel b{display:block;font-size:15px;font-weight:600}.mlabel span{display:block;font-size:12.5px;color:var(--mut);margin-top:2px}
+.mnums{text-align:right;white-space:nowrap}.mcur{font-size:21px;font-weight:600}.mtgt{display:block;font-size:11.5px;color:var(--mut)}
+.mstat{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:99px;white-space:nowrap}
+.ok{background:#E8F3F0;color:var(--teal)}.under{background:#FBE9EC;color:var(--red)}.pend{background:#F0F1F4;color:var(--mut)}
+.statbar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.st{background:var(--card);padding:14px 16px;font-size:12.5px;color:var(--mut)}
+.st span{display:block;font-size:25px;font-weight:600;color:var(--ink);margin-bottom:1px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.qc{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:17px 19px}
+.qc.wide{grid-column:1/-1;margin-top:16px}
+.qh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:2px}
+.qh h4{font-size:14.5px;font-weight:600;margin:0;line-height:1.35}
+.qa{font-size:11.5px;color:var(--mut);white-space:nowrap}
+.qc .note{font-size:12px;color:var(--mut);margin:2px 0 12px}
+.qrow{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.qbar{border:1px solid;border-radius:5px;padding:6px 10px;min-width:0;flex:0 0 auto;max-width:calc(100% - 40px)}
+.qbar em{font-style:normal;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.qn{font-size:12.5px;color:var(--mut);margin-left:auto}
+.ppl{display:grid;grid-template-columns:1fr 58px 58px 58px;gap:8px;font-size:10.5px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.ppl span{text-align:right}.ppl span:first-child{text-align:left}
+.pp{display:grid;grid-template-columns:1fr 58px 58px 58px;gap:8px;align-items:baseline;margin-top:12px}
+.ppn{font-size:13.5px}.ppv{font-size:13.5px;text-align:right;color:var(--mut)}.ppv.on{color:var(--ink);font-weight:600}
+.ppg{font-size:13px;text-align:right;color:var(--teal);font-weight:600}
+.pptrack{position:relative;height:8px;background:#EEF0F3;border-radius:4px;margin-top:6px}
+.pptrack i{position:absolute;top:0;height:100%;background:var(--teal);opacity:.75;border-radius:4px}
+.pptrack b{position:absolute;top:-2px;width:2px;height:12px;background:#9AA0AB;border-radius:1px}
+.pptrack b.e{background:var(--ink);width:3px}
+.themes{background:#FBFBFC;border:1px solid var(--rule);border-radius:7px;padding:14px 16px;margin:12px 0 16px}
+.tlab{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:700;margin-bottom:10px}
+.th{padding:9px 0;border-top:1px solid var(--rule)}.th:first-of-type{border-top:0;padding-top:0}
+.thh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.thn{font-size:14px;font-weight:600}
+.thc{font-size:12px;color:var(--red);font-weight:700}
+.th p{margin:3px 0 5px;font-size:12.5px;color:var(--mut)}
+.th q{font-size:12.5px;font-style:italic;color:var(--ink);opacity:.8}
+.car{border:1px solid var(--rule);border-radius:7px;overflow:hidden}
+.carh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--rule);background:#FBFBFC}
+.carh .tlab{margin:0}
+.nav{display:flex;align-items:center;gap:8px}
+.nav button{width:28px;height:28px;border:1px solid var(--rule);background:#fff;border-radius:6px;cursor:pointer;color:var(--ink);font-size:14px;line-height:1}
+.nav button:hover{border-color:var(--ink)}
+.ctr{font-size:11.5px;color:var(--mut);min-width:58px;text-align:center}
+.track{position:relative;min-height:92px}
+.slide{display:none;padding:16px 18px}.slide.on{display:block}
+.slide p{margin:0 0 6px;font-size:14.5px;line-height:1.55}
+.ts{font-size:11px;color:var(--mut)}
+.flag{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:8px;padding:17px 20px;margin-top:18px}
+.flag b{font-family:ui-serif,Georgia,serif;font-size:16px;display:block;margin-bottom:5px}
+.flag p{margin:0;font-size:14.5px}.flag p+p{margin-top:9px}
+.empty{background:var(--card);border:1px dashed var(--rule);border-radius:8px;padding:32px 24px;text-align:center;color:var(--mut)}
+.empty b{display:block;font-family:ui-serif,Georgia,serif;font-size:18px;color:var(--ink);margin-bottom:6px}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);color:var(--mut);font-size:12.5px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.statbar{grid-template-columns:1fr 1fr}
+ .m{grid-template-columns:36px 1fr;row-gap:8px}.mnums,.mstat{grid-column:2;justify-self:start;text-align:left}}
+</style></head><body><div class="wrap">
+<header>
+ <div class="eyebrow">Office of Cultural Student Engagement &middot; CGCSE</div>
+ <h1>Assessment Plan &mdash; Live Data</h1>
+ <div class="sub">First look at this year&rsquo;s data &nbsp;<span class="live"><span class="dot"></span>135 responses across 13 forms</span></div>
+ <nav>
+  <button class="on" onclick="go(this,'v1')">Everything together</button>
+  <button onclick="go(this,'v2')">Leadership Retreat</button>
+  <button onclick="go(this,'v3')">Presidents Council</button>
+  <button onclick="go(this,'v4')">Tate Time</button>
+  <button onclick="go(this,'v5')">Organizations</button>
+  <button onclick="go(this,'v7')">Advising</button>
+  <button onclick="go(this,'v6')">Staff Debriefs</button>
+ </nav>
+</header>
+
+<div class="view on" id="v1">
+ <div class="shead"><h2>Where we stand</h2><span class="tag">Across all programs so far</span></div>
+ <div class="measures"><div class="m"><div class="mcode">LO1</div><div class="mlabel"><b>Officers feel more capable running their organizations</b><span>Average confidence at the retreat, before and after the day</span></div><div class="mnums"><span class="mcur mono">3.6 &rarr; 4.4</span><span class="mtgt">goal: a half-point rise</span></div><div class="mstat ok">Going well</div></div><div class="m"><div class="mcode">LO1</div><div class="mlabel"><b>Student organizations taking part in leadership development</b><span>18 of 34 sent their president to the Council launch</span></div><div class="mnums"><span class="mcur mono">53%</span><span class="mtgt">goal: 7 in 10</span></div><div class="mstat under">Needs attention</div></div><div class="m"><div class="mcode">LO2</div><div class="mlabel"><b>Officers feel connected to UGA</b><span>Average rating out of 5 at the retreat</span></div><div class="mnums"><span class="mcur mono">4.45</span><span class="mtgt">goal: 4.0</span></div><div class="mstat ok">Going well</div></div><div class="m"><div class="mcode">LO1</div><div class="mlabel"><b>Share of attendees who filled out the survey</b><span>29 of 73 officers at the retreat</span></div><div class="mnums"><span class="mcur mono">40%</span><span class="mtgt">goal: 7 in 10</span></div><div class="mstat under">Needs attention</div></div></div>
+ <div class="flag"><b>What the data is saying so far</b>
+  <p><b>Only 4 in 10 officers filled out the retreat survey</b>, and under 3% of Tate Time attendees. The plan aims for 7 in 10. Getting the form into the room &mdash; a QR on every table, five minutes held back at the close &mdash; is the cheapest fix available, and everything else here gets more reliable when it lands.</p>
+  <p style="margin-top:10px"><b>Succession keeps surfacing.</b> Presidents rate their vision for the year at 5 out of 5 and their plan for the leaders who follow them at 3.7. The same gap appeared at the Council launch. Three separate surveys are pointing at it.</p>
+  <p style="margin-top:10px"><b>Money is the biggest open question.</b> Five of fourteen presidents named budgets or allocations; all three organizations reporting so far asked for financial or fundraising support. September&rsquo;s Executive Forum can answer it directly.</p>
+  <p style="margin-top:10px">Nearly half the officers who commented asked for <b>more hands-on activity and less lecture</b> &mdash; a change we can make to the spring retreat now.</p></div>
+</div>
+
+<div class="view" id="v2">
+ <div class="shead"><h2>Fall Student Leadership Retreat</h2><span class="tag">22 August &middot; every question, every answer</span></div>
+ 
+<div class="statbar">
+ <div class="st"><span class="mono">75</span>Visits</div>
+ <div class="st"><span class="mono">29</span>Submissions</div>
+ <div class="st"><span class="mono">73</span>Attended</div>
+ <div class="st"><span class="mono">40%</span>Response rate</div>
+</div>
+<div class="qc wide"><div class="qh"><h4>How confident officers felt, by area</h4><span class="qa">29 answers each</span></div><p class="note">Scale of 1 to 5. The bar shows how far each one moved across the day.</p><div class="ppl"><span></span><span class="mono">before</span><span class="mono">after</span><span></span></div><div class="pp"><span class="ppn">Understanding CSE policies and expectations</span><span class="mono ppv">3.31</span><span class="mono ppv on">4.34</span><span class="ppg mono">+1.03</span></div><div class="pptrack"><i style="left:57.8%;width:25.9%"></i><b style="left:57.8%"></b><b class="e" style="left:83.6%"></b></div><div class="pp"><span class="ppn">Managing finances and reimbursements</span><span class="mono ppv">2.93</span><span class="mono ppv on">4.10</span><span class="ppg mono">+1.17</span></div><div class="pptrack"><i style="left:48.3%;width:29.3%"></i><b style="left:48.3%"></b><b class="e" style="left:77.6%"></b></div><div class="pp"><span class="ppn">Planning and coordinating events</span><span class="mono ppv">3.93</span><span class="mono ppv on">4.59</span><span class="ppg mono">+0.66</span></div><div class="pptrack"><i style="left:73.3%;width:16.4%"></i><b style="left:73.3%"></b><b class="e" style="left:89.7%"></b></div><div class="pp"><span class="ppn">Communicating within your organization</span><span class="mono ppv">4.28</span><span class="mono ppv on">4.72</span><span class="ppg mono">+0.45</span></div><div class="pptrack"><i style="left:81.9%;width:11.2%"></i><b style="left:81.9%"></b><b class="e" style="left:93.1%"></b></div></div>
+<div class="flag"><b>Where the day did the most work</b>
+ <p>Officers arrived least confident about <em>money</em> (2.93 of 5) and that is exactly where the retreat moved them furthest, up 1.17 points. Policies rose almost as much. The two areas they already felt strong in &mdash; events and talking to their own members &mdash; barely shifted, which is what you'd want.</p></div>
+<div class="grid">
+ <div class="qc"><div class="qh"><h4>Your officer role</h4><span class="qa">29 answers</span></div><div class="qrow"><span class="qbar" style="width:100.0%;background:#141B2D12;border-color:#141B2D30"><em>Vice President</em></span><span class="qn mono">12</span></div><div class="qrow"><span class="qbar" style="width:83.3%;background:#141B2D12;border-color:#141B2D30"><em>President</em></span><span class="qn mono">10</span></div><div class="qrow"><span class="qbar" style="width:58.3%;background:#141B2D12;border-color:#141B2D30"><em>Treasurer</em></span><span class="qn mono">7</span></div></div>
+ <div class="qc"><div class="qh"><h4>Is this your first year in an officer role?</h4><span class="qa">29 answers</span></div><div class="qrow"><span class="qbar" style="width:100.0%;background:#141B2D12;border-color:#141B2D30"><em>No</em></span><span class="qn mono">16</span></div><div class="qrow"><span class="qbar" style="width:81.2%;background:#141B2D12;border-color:#141B2D30"><em>Yes</em></span><span class="qn mono">13</span></div></div>
+ <div class="qc"><div class="qh"><h4>Which morning sessions were most useful?</h4><span class="qa">54 answers</span></div><p class=note>Officers could pick more than one</p><div class="qrow"><span class="qbar" style="width:100.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Introduction to financial processes</em></span><span class="qn mono">17</span></div><div class="qrow"><span class="qbar" style="width:94.1%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Engagement, Leadership and Services — Involvement Network</em></span><span class="qn mono">16</span></div><div class="qrow"><span class="qbar" style="width:76.5%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Office expectations, guidelines, and storage</em></span><span class="qn mono">13</span></div><div class="qrow"><span class="qbar" style="width:41.2%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Team-building energizer</em></span><span class="qn mono">7</span></div><div class="qrow"><span class="qbar" style="width:7.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Director's Welcome and Center Overview</em></span><span class="qn mono">1</span></div></div>
+ <div class="qc"><div class="qh"><h4>Which afternoon breakout did you attend?</h4><span class="qa">29 answers</span></div><div class="qrow"><span class="qbar" style="width:100.0%;background:#141B2D12;border-color:#141B2D30"><em>Vice Presidents — Best Practices</em></span><span class="qn mono">11</span></div><div class="qrow"><span class="qbar" style="width:90.9%;background:#141B2D12;border-color:#141B2D30"><em>Presidents — Presidents Connection</em></span><span class="qn mono">10</span></div><div class="qrow"><span class="qbar" style="width:72.7%;background:#141B2D12;border-color:#141B2D30"><em>Treasurers — Financial Systems Training</em></span><span class="qn mono">8</span></div></div>
+ <div class="qc"><div class="qh"><h4>How useful was your breakout session?</h4><span class="qa">29 answers</span></div><p class=note>Rated 1 to 10</p><div class="qrow"><span class="qbar" style="width:100.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>10</em></span><span class="qn mono">12</span></div><div class="qrow"><span class="qbar" style="width:41.7%;background:#BA0C2F12;border-color:#BA0C2F30"><em>8</em></span><span class="qn mono">5</span></div><div class="qrow"><span class="qbar" style="width:33.3%;background:#BA0C2F12;border-color:#BA0C2F30"><em>6</em></span><span class="qn mono">4</span></div><div class="qrow"><span class="qbar" style="width:25.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>9</em></span><span class="qn mono">3</span></div><div class="qrow"><span class="qbar" style="width:25.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>7</em></span><span class="qn mono">3</span></div><div class="qrow"><span class="qbar" style="width:16.7%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Other</em></span><span class="qn mono">2</span></div></div>
+ <div class="qc"><div class="qh"><h4>I feel more connected to other cultural student organization leaders</h4><span class="qa">29 answers</span></div><p class=note>Rated 1 to 10</p><div class="qrow"><span class="qbar" style="width:100.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>10</em></span><span class="qn mono">8</span></div><div class="qrow"><span class="qbar" style="width:100.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>8</em></span><span class="qn mono">8</span></div><div class="qrow"><span class="qbar" style="width:75.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>7</em></span><span class="qn mono">6</span></div><div class="qrow"><span class="qbar" style="width:50.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>6</em></span><span class="qn mono">4</span></div><div class="qrow"><span class="qbar" style="width:12.5%;background:#BA0C2F12;border-color:#BA0C2F30"><em>9</em></span><span class="qn mono">1</span></div><div class="qrow"><span class="qbar" style="width:25.0%;background:#BA0C2F12;border-color:#BA0C2F30"><em>Other</em></span><span class="qn mono">2</span></div></div>
+ <div class="qc"><div class="qh"><h4>As a result of this program, I feel more connected to the UGA community</h4><span class="qa">29 answers</span></div><p class=note>Rated 1 to 5 &middot; average 4.45</p><div class="qrow"><span class="qbar" style="width:100.0%;background:#1F7A6E12;border-color:#1F7A6E30"><em>5</em></span><span class="qn mono">16</span></div><div class="qrow"><span class="qbar" style="width:62.5%;background:#1F7A6E12;border-color:#1F7A6E30"><em>4</em></span><span class="qn mono">10</span></div><div class="qrow"><span class="qbar" style="width:18.8%;background:#1F7A6E12;border-color:#1F7A6E30"><em>3</em></span><span class="qn mono">3</span></div></div>
+ <div class="qc"><div class="qh"><h4>This retreat helped me feel:</h4><span class="qa">74 answers</span></div><p class=note>Officers could pick more than one</p><div class="qrow"><span class="qbar" style="width:100.0%;background:#1F7A6E12;border-color:#1F7A6E30"><em>Supported — guidance or resources I needed</em></span><span class="qn mono">17</span></div><div class="qrow"><span class="qbar" style="width:94.1%;background:#1F7A6E12;border-color:#1F7A6E30"><em>Welcomed — seen and valued here</em></span><span class="qn mono">16</span></div><div class="qrow"><span class="qbar" style="width:94.1%;background:#1F7A6E12;border-color:#1F7A6E30"><em>Connected — built or strengthened a relationship</em></span><span class="qn mono">16</span></div><div class="qrow"><span class="qbar" style="width:82.4%;background:#1F7A6E12;border-color:#1F7A6E30"><em>Included — real chance to take part</em></span><span class="qn mono">14</span></div><div class="qrow"><span class="qbar" style="width:64.7%;background:#1F7A6E12;border-color:#1F7A6E30"><em>Known — seen as an individual</em></span><span class="qn mono">11</span></div></div>
+</div>
+<div class="qc wide">
+ <div class="qh"><h4>What is one thing you will do differently in your organization?</h4><span class="qa">14 answers</span></div>
+ <div class="themes"><div class="tlab">What people said, grouped</div><div class="th"><div class="thh"><span class="thn">Willing to ask for help</span><span class="thc mono">3</span></div><p>Officers repeatedly named reaching out — to staff, advisors, or peers — as the change they'd make.</p><q>Always reach out with any questions I might have even if they feel minuscule.</q></div><div class="th"><div class="thh"><span class="thn">Handling money properly</span><span class="thc mono">3</span></div><p>Reimbursements, deadlines, and budget organisation — the area they started lowest on.</p><q>Submitting things extra early and properly filling out reimbursement forms.</q></div><div class="th"><div class="thh"><span class="thn">Communicating inside the organization</span><span class="thc mono">2</span></div><p>Keeping members informed rather than only the executive board.</p><q>Communicate more effectively.</q></div><div class="th"><div class="thh"><span class="thn">Working with other organizations</span><span class="thc mono">2</span></div><p>Collaboration and shared events came up unprompted.</p><q>Communication with other orgs.</q></div><div class="th"><div class="thh"><span class="thn">Leading rather than befriending</span><span class="thc mono">1</span></div><p>One officer named the hardest part of the role directly.</p><q>Be a stronger leader. Have a distinction between leader and friend</q></div></div>
+ <div class="car" id="c1">
+   <div class="carh"><span class="tlab">Every response</span>
+     <span class="nav"><button onclick="mv('c1',-1)" aria-label="Previous">&larr;</button>
+     <span class="ctr mono" id="c1n">1 of 14</span>
+     <button onclick="mv('c1',1)" aria-label="Next">&rarr;</button></span></div>
+   <div class="track"><div class="slide"><p>One thing I will do differently is being able to communicate effectively. Making sure all members are aware of everything going on within the organization. Also, making sure that I am doing the finances right when it comes to reimbursements and vendor payments.</p><span class=ts>21 hours ago</span></div><div class="slide"><p>Working on collaborations with other organizations to promote both causes and work to expand our reach within the creative sphere.</p><span class=ts>Aug 23, 11:35 PM</span></div><div class="slide"><p>Think about utilizing the resources we learned about</p><span class=ts>Aug 23, 07:40 PM</span></div><div class="slide"><p>Always reach out with any questions I might have even if they feel minuscule.</p><span class=ts>Aug 23, 07:15 PM</span></div><div class="slide"><p>come with more knowledge</p><span class=ts>Aug 23, 06:15 PM</span></div><div class="slide"><p>Submitting things extra early and properly filling out reimbursement forms.</p><span class=ts>Aug 22, 03:30 PM</span></div><div class="slide"><p>Better financial organization</p><span class=ts>Aug 22, 03:19 PM</span></div><div class="slide"><p>Communication with other orgs.</p><span class=ts>Aug 22, 03:10 PM</span></div><div class="slide"><p>Be less afraid to ask questions</p><span class=ts>Aug 22, 02:34 PM</span></div><div class="slide"><p>Be a stronger leader. Have a distinction between leader and friend</p><span class=ts>Aug 22, 02:34 PM</span></div><div class="slide"><p>Communicate more effectively.</p><span class=ts>Aug 22, 02:33 PM</span></div><div class="slide"><p>Not be afraid to reach out for advice</p><span class=ts>Aug 22, 02:33 PM</span></div><div class="slide"><p>Maybe just combine all sessions</p><span class=ts>Aug 22, 02:32 PM</span></div><div class="slide"><p>NA</p><span class=ts>Aug 22, 02:33 PM</span></div></div>
+ </div></div>
+<div class="qc wide">
+ <div class="qh"><h4>What would you change or improve about the retreat?</h4><span class="qa">13 answers</span></div>
+ <div class="themes"><div class="tlab">What people said, grouped</div><div class="th"><div class="thh"><span class="thn">More doing, less listening</span><span class="thc mono">6</span></div><p>The single strongest signal in the retreat data — nearly half of everyone who answered.</p><q>more interactive activities, less lecturing</q></div><div class="th"><div class="thh"><span class="thn">Timing and length</span><span class="thc mono">4</span></div><p>Start later, hold it Sunday, or make the day shorter.</p><q>Starting a little later</q></div><div class="th"><div class="thh"><span class="thn">Trim repeated content</span><span class="thc mono">2</span></div><p>General sessions covering what the breakouts cover again.</p><q>Make the general financial section a bit shorter since most of the details will be covered in the treasurers breakout session.</q></div><div class="th"><div class="thh"><span class="thn">Food</span><span class="thc mono">1</span></div><p>Worth a line in the run sheet.</p><q>Maybe add some sort of protein in the breakfast.</q></div></div>
+ <div class="car" id="c2">
+   <div class="carh"><span class="tlab">Every response</span>
+     <span class="nav"><button onclick="mv('c2',-1)" aria-label="Previous">&larr;</button>
+     <span class="ctr mono" id="c2n">1 of 13</span>
+     <button onclick="mv('c2',1)" aria-label="Next">&rarr;</button></span></div>
+   <div class="track"><div class="slide"><p>I really loved the retreat I don't think there is anything I would do differently maybe make it on a Sunday I know some people have things to do on Saturday's so a Sunday would be good.</p><span class=ts>21 hours ago</span></div><div class="slide"><p>Starting a little later</p><span class=ts>Aug 23, 11:35 PM</span></div><div class="slide"><p>More interactive activities</p><span class=ts>Aug 23, 07:40 PM</span></div><div class="slide"><p>Make the general financial section a bit shorter since most of the details will be covered in the treasurers breakout session.</p><span class=ts>Aug 23, 07:15 PM</span></div><div class="slide"><p>n/a</p><span class=ts>Aug 23, 06:15 PM</span></div><div class="slide"><p>Just making it more interactive!</p><span class=ts>Aug 22, 03:30 PM</span></div><div class="slide"><p>More interactive components such as the drawing activity</p><span class=ts>Aug 22, 03:19 PM</span></div><div class="slide"><p>Shorter talking bits and more engagement</p><span class=ts>Aug 22, 02:34 PM</span></div><div class="slide"><p>Make the presentations more engaging</p><span class=ts>Aug 22, 02:34 PM</span></div><div class="slide"><p>more interactive activities, less lecturing</p><span class=ts>Aug 22, 02:34 PM</span></div><div class="slide"><p>Shorter</p><span class=ts>Aug 22, 02:33 PM</span></div><div class="slide"><p>Have it earlier.</p><span class=ts>Aug 22, 02:33 PM</span></div><div class="slide"><p>Maybe add some sort of protein in the breakfast.</p><span class=ts>Aug 22, 02:33 PM</span></div></div>
+ </div></div>
+
+</div>
+
+<div class="view" id="v3">
+ <div class="shead"><h2>Presidents Leadership Council</h2><span class="tag">Launch Retreat &middot; four surveys</span></div>
+ 
+<div class="statbar">
+ <div class="st"><span class="mono">18</span>Organizations</div>
+ <div class="st"><span class="mono">17</span>Reflections</div>
+ <div class="st"><span class="mono">14</span>Session ratings</div>
+ <div class="st"><span class="mono">15</span>Sounding board</div>
+</div>
+<h3 class="lbl">Start-of-year reflection &middot; 17 presidents</h3>
+<div class="grid">
+ <div class="qc"><div class="qh"><h4>Where presidents say they need the most help</h4><span class="qa">17 answers</span></div><p class=note>Their own rating of each skill, 1 to 5. Lowest first.</p><div class="qrow"><span class="qbar" style="width:72.9%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Working with their advisor</em></span><span class="qn mono">3.6</span></div><div class="qrow"><span class="qbar" style="width:74.1%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Telling CSE what they need</em></span><span class="qn mono">3.7</span></div><div class="qrow"><span class="qbar" style="width:77.6%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Preparing the next leaders</em></span><span class="qn mono">3.9</span></div><div class="qrow"><span class="qbar" style="width:80.0%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Handling conflict</em></span><span class="qn mono">4.0</span></div><div class="qrow"><span class="qbar" style="width:80.0%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Partnering with other orgs</em></span><span class="qn mono">4.0</span></div><div class="qrow"><span class="qbar" style="width:81.2%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Planning events</em></span><span class="qn mono">4.1</span></div><div class="qrow"><span class="qbar" style="width:81.2%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Recruiting and keeping members</em></span><span class="qn mono">4.1</span></div><div class="qrow"><span class="qbar" style="width:82.4%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Running effective meetings</em></span><span class="qn mono">4.1</span></div></div>
+ <div class="qc"><div class="qh"><h4>How connected presidents feel right now</h4><span class="qa">17 answers</span></div><p class=note>Where they are now, so we can see what changes by May</p><div class="qrow"><span class="qbar" style="width:74.1%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Feel connected to other leaders</em></span><span class="qn mono">3.7</span></div><div class="qrow"><span class="qbar" style="width:84.7%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Sense of belonging as a leader</em></span><span class="qn mono">4.2</span></div><div class="qrow"><span class="qbar" style="width:85.9%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Know where to turn for support</em></span><span class="qn mono">4.3</span></div><div class="qrow"><span class="qbar" style="width:87.1%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Feel seen and known</em></span><span class="qn mono">4.4</span></div><div class="qrow"><span class="qbar" style="width:88.2%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Feel part of the community</em></span><span class="qn mono">4.4</span></div><div class="qrow"><span class="qbar" style="width:89.4%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Feel welcomed at UGA</em></span><span class="qn mono">4.5</span></div></div>
+</div>
+<div class="flag"><b>They belong here. They just don&rsquo;t know each other yet.</b>
+ <p>Presidents rate <em>feeling welcomed at UGA</em> near the top and <em>feeling connected to other leaders</em> lowest of everything asked &mdash; 3.7 out of 5. Yet after one day together they rated <em>meaningful exchanges with other presidents</em> at 4.93 out of 5. One retreat moved it. Six Executive Forums should move it further, and we now have the number to check.</p></div>
+<h3 class="lbl">Launch Retreat session feedback &middot; 14 presidents</h3>
+<div class="grid">
+ <div class="qc"><div class="qh"><h4>How the session landed</h4><span class="qa">14 answers</span></div><p class=note>Average rating out of 5</p><div class="qrow"><span class="qbar" style="width:95.8%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Relevant to where my organization is right now</em></span><span class="qn mono">4.8</span></div><div class="qrow"><span class="qbar" style="width:98.6%;background:#1F7A6E14;border-color:#1F7A6E40"><em>I had meaningful exchanges with other presidents</em></span><span class="qn mono">4.9</span></div><div class="qrow"><span class="qbar" style="width:95.8%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Facilitation created space for honest conversation</em></span><span class="qn mono">4.8</span></div><div class="qrow"><span class="qbar" style="width:95.8%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Leaving with something concrete I can use</em></span><span class="qn mono">4.8</span></div></div>
+ <div class="qc"><div class="qh"><h4>Organizations represented</h4><span class="qa">18 of 34</span></div>
+  <p class="note">Presidents attending the Council launch, as a share of affiliated organizations</p>
+  <div class="qrow"><span class="qbar" style="width:53%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Attended</em></span><span class="qn mono">18</span></div>
+  <div class="qrow"><span class="qbar" style="width:47%;background:#EEF0F3;border-color:#E3E6EB"><em>Did not</em></span><span class="qn mono">16</span></div></div>
+</div>
+<div class="qc wide">
+ <div class="qh"><h4>One thing I'm taking back to my organization</h4><span class="qa">14 answers</span></div>
+ <div class="themes"><div class="tlab">What people said, grouped</div><div class="th"><div class="thh"><span class="thn">Boundaries between friend and leader</span><span class="thc mono">4</span></div><p>Presidents keep naming the same tension — leading people who are also their friends.</p><q>I got some advice on how to separate my friendships from work time.</q></div><div class="th"><div class="thh"><span class="thn">Structure and formal process</span><span class="thc mono">4</span></div><p>Agendas, meeting procedure, stricter planning.</p><q>Formalization of e-board agendas and meeting procedures.</q></div><div class="th"><div class="thh"><span class="thn">Professionalism</span><span class="thc mono">3</span></div><p>Raising the standard of how the organization operates.</p><q>Creating more of professional environment.</q></div><div class="th"><div class="thh"><span class="thn">Delegating and mobilising the board</span><span class="thc mono">2</span></div><p>Getting work off the president and onto the team.</p><q>Delegating tasks</q></div></div>
+ <div class="car" id="c3">
+   <div class="carh"><span class="tlab">Every response</span>
+     <span class="nav"><button onclick="mv('c3',-1)" aria-label="Previous">&larr;</button>
+     <span class="ctr mono" id="c3n">1 of 14</span>
+     <button onclick="mv('c3',1)" aria-label="Next">&rarr;</button></span></div>
+   <div class="track"><div class="slide"><p>How to set professional boundaries with eboard</p></div><div class="slide"><p>A plan and revelations to improve the organization by implementing stricter structure, planning, and flow of knowledge</p></div><div class="slide"><p>Consistency</p></div><div class="slide"><p>Distinction of friend and exec position as President.</p></div><div class="slide"><p>Conflict resolution and growth</p></div><div class="slide"><p>BRIDGE ELC</p></div><div class="slide"><p>separating chats</p></div><div class="slide"><p>Collaboration and structure</p></div><div class="slide"><p>Formalization of e-board agendas and meeting procedures.</p></div><div class="slide"><p>Creating more of professional environment.</p></div><div class="slide"><p>Delegating tasks</p></div><div class="slide"><p>I got some advice on how to separate my friendships from work time.</p></div><div class="slide"><p>The working better as a team aspect</p></div><div class="slide"><p>professionalism</p></div></div>
+ </div></div>
+<div class="qc wide">
+ <div class="qh"><h4>One question I'm still sitting with</h4><span class="qa">14 answers</span></div>
+ <div class="themes"><div class="tlab">What people said, grouped</div><div class="th"><div class="thh"><span class="thn">Money and budgets</span><span class="thc mono">5</span></div><p>Five of fourteen — by far the largest unanswered question.</p><q>How will we know our allocated money/budget from CSE?</q></div><div class="th"><div class="thh"><span class="thn">Keeping and growing membership</span><span class="thc mono">2</span></div><p>Retention and recruitment of the next cohort.</p><q>How do we keep member retention?</q></div><div class="th"><div class="thh"><span class="thn">Working with advisors</span><span class="thc mono">1</span></div><p>Connecting with the staff assigned to support them.</p><q>Still understanding how to connect better with advisors</q></div><div class="th"><div class="thh"><span class="thn">Balancing the role</span><span class="thc mono">1</span></div><p>Professional and social life as a student leader.</p><q>Professional and social balance</q></div></div>
+ <div class="car" id="c4">
+   <div class="carh"><span class="tlab">Every response</span>
+     <span class="nav"><button onclick="mv('c4',-1)" aria-label="Previous">&larr;</button>
+     <span class="ctr mono" id="c4n">1 of 14</span>
+     <button onclick="mv('c4',1)" aria-label="Next">&rarr;</button></span></div>
+   <div class="track"><div class="slide"><p>N/A</p></div><div class="slide"><p>How will we know our allocated money/budget from CSE?</p></div><div class="slide"><p>Na</p></div><div class="slide"><p>Still understanding how to connect better with advisors</p></div><div class="slide"><p>N/a</p></div><div class="slide"><p>How much money is on the Publix credit card?!</p></div><div class="slide"><p>financial questions on ordering things</p></div><div class="slide"><p>How to really mobilize my e-board</p></div><div class="slide"><p>Succession planning and undergrad recruitment</p></div><div class="slide"><p>N/A</p></div><div class="slide"><p>Professional and social balance</p></div><div class="slide"><p>How do we keep member retention?</p></div><div class="slide"><p>Financials</p></div><div class="slide"><p>none</p></div></div>
+ </div></div>
+<h3 class="lbl">Belonging sounding board &middot; 15 presidents</h3>
+<div class="qc wide">
+ <div class="qh"><h4>What would help you feel most welcomed and connected at UGA?</h4><span class="qa">14 answers</span></div>
+ <div class="themes"><div class="tlab">What people said, grouped</div><div class="th"><div class="thh"><span class="thn">Meeting other student leaders</span><span class="thc mono">6</span></div><p>The most common answer by a clear margin — presidents want each other.</p><q>More face time with the other student leaders.</q></div><div class="th"><div class="thh"><span class="thn">Access to CSE staff and advisors</span><span class="thc mono">3</span></div><p>Knowing who to talk to and when they're available.</p><q>A good connection with CSE directors and advisors.</q></div><div class="th"><div class="thh"><span class="thn">More events like this one</span><span class="thc mono">3</span></div><p>The retreat format itself is what they're asking for more of.</p><q>Probably events like this where i get to meet like-minded people.</q></div><div class="th"><div class="thh"><span class="thn">Practical tools</span><span class="thc mono">2</span></div><p>The shared calendar and regular email updates.</p><q>The shared calendar will definitely help!!</q></div></div>
+ <div class="car" id="c5">
+   <div class="carh"><span class="tlab">Every response</span>
+     <span class="nav"><button onclick="mv('c5',-1)" aria-label="Previous">&larr;</button>
+     <span class="ctr mono" id="c5n">1 of 14</span>
+     <button onclick="mv('c5',1)" aria-label="Next">&rarr;</button></span></div>
+   <div class="track"><div class="slide"><p>I'd just like to get to know other student leaders in the community.</p></div><div class="slide"><p>I think you guys did an amazing job on preparing us. I was lost before today but I feel so much better. Thank you for all your hard work in the summer I can assure you it’s paid off with everything I’m learning today as a new president</p></div><div class="slide"><p>Definitely more conversations about inclusivity and belonging among organizations on campus. Also seeing representation within organizations.</p></div><div class="slide"><p>Others reaching out to me and trying their best to talk to me and get to know me</p></div><div class="slide"><p>Connection across all over CSE, with both advisors/administrators and other student organizations.</p></div><div class="slide"><p>Probably events like this where i get to meet like-minded people.</p></div><div class="slide"><p>More resources for spring transfer students</p></div><div class="slide"><p>The shared calendar will definitely help!!</p></div><div class="slide"><p>More face time with the other student leaders.</p></div><div class="slide"><p>A good connection with CSE directors and advisors.</p></div><div class="slide"><p>having more connections or events to help it</p></div><div class="slide"><p>Marketing and making sure my organization is well versed</p></div><div class="slide"><p>Just getting emails with updates!</p></div><div class="slide"><p>More retreat events like these but a little bit more fun</p></div></div>
+ </div></div>
+<div class="qc wide">
+ <div class="qh"><h4>What support would make the biggest difference this year?</h4><span class="qa">15 answers</span></div>
+ <div class="themes"><div class="tlab">What people said, grouped</div><div class="th"><div class="thh"><span class="thn">Money and finance processes</span><span class="thc mono">3</span></div><p>Consistent friction with the finance office.</p><q>Probably just more support with the finance office since we consistently have issues there.</q></div><div class="th"><div class="thh"><span class="thn">Time with staff</span><span class="thc mono">3</span></div><p>Office hours, advisor meetings, knowing availability.</p><q>Just having time to speak with any of the coordinators! Perhaps knowing specific office hours or their availability.</q></div><div class="th"><div class="thh"><span class="thn">Event planning help</span><span class="thc mono">2</span></div><p>Particularly for organizations that have never run a major event.</p><q>Support with event planning would help most! Our org has never hosted its own major event so it’d be a lot of help.</q></div><div class="th"><div class="thh"><span class="thn">Connecting organizations to each other</span><span class="thc mono">2</span></div><p>Brokered collaboration rather than organic.</p><q>Facilitating more opportunities for engagement between orgs.</q></div><div class="th"><div class="thh"><span class="thn">Growing and keeping members</span><span class="thc mono">2</span></div><p>Retention named directly.</p><q>Working on member retention!</q></div></div>
+ <div class="car" id="c6">
+   <div class="carh"><span class="tlab">Every response</span>
+     <span class="nav"><button onclick="mv('c6',-1)" aria-label="Previous">&larr;</button>
+     <span class="ctr mono" id="c6n">1 of 15</span>
+     <button onclick="mv('c6',1)" aria-label="Next">&rarr;</button></span></div>
+   <div class="track"><div class="slide"><p>Support with event planning would help most! Our org has never hosted its own major event so it’d be a lot of help.</p></div><div class="slide"><p>I think that’s something we should do as a board be the support for the body and you guys are the support for us board members</p></div><div class="slide"><p>Support through mentorship.</p></div><div class="slide"><p>Financial support, collaboration/connections</p></div><div class="slide"><p>Clarity and aid in completion of administrative tasks</p></div><div class="slide"><p>Probably just more support with the finance office since we consistently have issues there.</p></div><div class="slide"><p>Advisor meetings, feeling familiar with the higher ups that know how to help run a successful org</p></div><div class="slide"><p>Just having time to speak with any of the coordinators! Perhaps knowing specific office hours or their availability.</p></div><div class="slide"><p>More personalized and individualized support</p></div><div class="slide"><p>Facilitating more opportunities for engagement between orgs.</p></div><div class="slide"><p>The communication value and make sure everything is done correctly and in an orderly fashion.</p></div><div class="slide"><p>more advise on organizational structure</p></div><div class="slide"><p>More social support and navigating outreach.</p></div><div class="slide"><p>Working on member retention!</p></div><div class="slide"><p>Financial support and spreading the word</p></div></div>
+ </div></div>
+
+</div>
+
+<div class="view" id="v5">
+ <div class="shead"><h2>Organizations and Presidents</h2><span class="tag">Fall baseline &middot; 6 of 34 organizations reporting</span></div>
+ <div class="statbar">
+  <div class="st"><span class="mono">6</span>Organizations reporting</div>
+  <div class="st"><span class="mono">229</span>Members represented</div>
+  <div class="st"><span class="mono">22</span>Graduating this year</div>
+  <div class="st"><span class="mono">5</span>President reflections</div>
+ </div>
+ <div class="grid">
+  <div class="qc"><div class="qh"><h4>How organizations rate their own health</h4><span class="qa">6 answers</span></div>
+   <p class="note">Their own rating, 1 to 5. Lowest first.</p>
+   <div class="qrow"><span class="qbar" style="width:90%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Programming meeting members&rsquo; needs</em></span><span class="qn mono">4.5</span></div>
+   <div class="qrow"><span class="qbar" style="width:90%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Members feel connected to the organization</em></span><span class="qn mono">4.5</span></div>
+   <div class="qrow"><span class="qbar" style="width:93%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Membership active and engaged</em></span><span class="qn mono">4.7</span></div>
+   <div class="qrow"><span class="qbar" style="width:93%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Leadership team functioning well</em></span><span class="qn mono">4.7</span></div>
+   <div class="qrow"><span class="qbar" style="width:93%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Has the resources it needs</em></span><span class="qn mono">4.7</span></div>
+   <div class="qrow"><span class="qbar" style="width:93%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Connected to CSE and campus resources</em></span><span class="qn mono">4.7</span></div>
+   <div class="qrow"><span class="qbar" style="width:97%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Work reflects UGA&rsquo;s broader goals</em></span><span class="qn mono">4.8</span></div>
+  </div>
+  <div class="qc"><div class="qh"><h4>How presidents rate their own readiness</h4><span class="qa">5 answers</span></div>
+   <p class="note">Their own rating, 1 to 5. Lowest first.</p>
+   <div class="qrow"><span class="qbar" style="width:73%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Has a plan for the leaders who come next</em></span><span class="qn mono">3.7</span></div>
+   <div class="qrow"><span class="qbar" style="width:87%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Officer team aligned on shared goals</em></span><span class="qn mono">4.3</span></div>
+   <div class="qrow"><span class="qbar" style="width:93%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Feels prepared to lead effectively</em></span><span class="qn mono">4.7</span></div>
+   <div class="qrow"><span class="qbar" style="width:100%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Has a clear vision for the year</em></span><span class="qn mono">5.0</span></div>
+   <div class="qrow"><span class="qbar" style="width:100%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Building skills beyond this role</em></span><span class="qn mono">5.0</span></div>
+  </div>
+ </div>
+ <div class="flag"><b>The same gap keeps appearing</b>
+  <p>Presidents rate their vision at 5 out of 5 and their plan for the leaders who follow them at <b>3.7</b> &mdash; one rated it a 1. At the Council launch, <em>preparing my organization for the leaders who come after me</em> was also among the lowest items. Three surveys, three weeks apart, pointing at the same thing.</p>
+  <p style="margin-top:10px">Succession is what turns a good year into a good decade for an organization, and it is the single most addressable item on this page. April&rsquo;s Forum on transition and the officer transition session are already positioned for it.</p></div>
+ <div class="cols" style="margin-top:18px">
+  <div class="card"><h4>What is going well</h4>
+   <p class="note">In their own words, exactly as written</p>
+   <blockquote><p>We have recently experienced successful growth by expanding our general membership. Right now, we are building strong momentum as we develop comprehensive, strategic plans for the year ahead to keep our new and returning members highly engaged.</p><cite>Sri Lankan Student Association</cite></blockquote>
+   <blockquote><p>Our officer team is definitely on top of things more which makes for a better well rounded club experience!</p><cite>Malayalees of UGA</cite></blockquote>
+   <blockquote><p>Our executive board is optimistic, harmonious, and working well together.</p><cite>CASA</cite></blockquote>
+   <blockquote><p>Through the engagement fair and the work of our executive board, we have almost doubled our Instagram following count, and we had a relatively good turnout to our first meeting, despite it being at an inconvenient time.</p><cite>BPIA</cite></blockquote>
+  </div>
+  <div class="card"><h4>Where they need support</h4>
+   <p class="note">In their own words, exactly as written</p>
+   <blockquote><p>We would appreciate support in navigating the funding, or coordination required to make this cross-university cultural excursion a success.</p><cite>Sri Lankan Student Association</cite></blockquote>
+   <blockquote><p>We do need more resources in order to use during our meetings, maybe there&rsquo;s some that are available but not aware of. Maybe support with fundraising?</p><cite>Malayalees of UGA</cite></blockquote>
+   <blockquote><p>Financial support, collaboration and outreach</p><cite>CASA</cite></blockquote>
+   <blockquote><p>Member retention! This is always a problem with us, since we are a magazine. People can write/design for us, but they don&rsquo;t have to come to the meetings to do so.</p><cite>InfUSion Magazine</cite></blockquote>
+  </div>
+ </div>
+</div>
+
+<div class="view" id="v7">
+ <div class="shead"><h2>Advising and Service Contacts</h2><span class="tag">First entries &middot; logging began 8 September</span></div>
+ <div class="statbar">
+  <div class="st"><span class="mono">2</span>Contacts logged</div>
+  <div class="st"><span class="mono">1</span>Organizations reached</div>
+  <div class="st"><span class="mono">3%</span>Of the 34 affiliated</div>
+  <div class="st"><span class="mono">1</span>Needing follow-up</div>
+ </div>
+ <div class="flag"><b>Two entries is a start, not a picture</b>
+  <p>The service-use rate is the measure OO1 turns on &mdash; the share of affiliated organizations receiving at least one documented support interaction, against a goal of 75%. Right now that reads <b>1 of 34</b>.</p>
+  <p style="margin-top:10px">That almost certainly understates what is happening. Advising conversations are taking place; they are not being logged. Until they are, the office cannot show the support it is providing, and cannot identify which organizations are getting none.</p>
+  <p style="margin-top:10px">Both entries so far were under fifteen minutes, and one already needed handing to another staff member &mdash; which is exactly the pattern the log exists to surface.</p></div>
+ <div class="grid" style="margin-top:18px">
+  <div class="qc"><div class="qh"><h4>Who the contacts were with</h4><span class="qa">2 answers</span></div>
+   <div class="qrow"><span class="qbar" style="width:60%;background:#1F7A6E14;border-color:#1F7A6E40"><em>CSO officer &mdash; Treasurer</em></span><span class="qn mono">1</span></div>
+   <div class="qrow"><span class="qbar" style="width:60%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Individual student</em></span><span class="qn mono">1</span></div>
+  </div>
+  <div class="qc"><div class="qh"><h4>What they were about</h4><span class="qa">2 answers</span></div>
+   <div class="qrow"><span class="qbar" style="width:60%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Transition and succession</em></span><span class="qn mono">1</span></div>
+   <div class="qrow"><span class="qbar" style="width:60%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Resource connection</em></span><span class="qn mono">1</span></div>
+   <div class="qrow"><span class="qbar" style="width:60%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Fiscal admin and supplier form</em></span><span class="qn mono">1</span></div>
+   <div class="qrow"><span class="qbar" style="width:60%;background:#1F7A6E14;border-color:#1F7A6E40"><em>General conversation about CGCSE</em></span><span class="qn mono">1</span></div>
+  </div>
+ </div>
+</div>
+
+<div class="view" id="v6">
+ <div class="shead"><h2>Staff Debriefs</h2><span class="tag">2 programs recorded &middot; 219 attendees between them</span></div>
+ <div class="statbar">
+  <div class="st"><span class="mono">2</span>Programs debriefed</div>
+  <div class="st"><span class="mono">219</span>Total attendance</div>
+  <div class="st"><span class="mono">109</span>Silent Disco</div>
+  <div class="st"><span class="mono">110</span>Tate Time, 26 Aug</div>
+ </div>
+ <div class="flag"><b>Why these matter more than they look</b>
+  <p>These two debriefs are the only place the office has an attendance figure for either programme. Every response rate on this dashboard depends on someone writing that number down within a couple of days of the event.</p>
+  <p style="margin-top:10px">They also caught something no participant survey would: Silent Disco drew 109 people and the staff view was that <em>engagement</em> was strong but <em>attendance</em> fell short of expectation &mdash; with marketing named as the fix. That is a finding about promotion, not programming, and it only exists because someone wrote it down.</p></div>
+ <div class="cols" style="margin-top:18px">
+  <div class="card"><h4>What worked</h4>
+   <p class="note">In their own words, exactly as written</p>
+   <blockquote><p>Meaningful Engagement: we had students stay literally the entire time</p><cite>Silent Disco &middot; 19 August</cite></blockquote>
+   <blockquote><p>Set up was smooth. The volunteers were on time. Pizza got delivered on time.</p><cite>Tate Time &middot; 26 August</cite></blockquote>
+  </div>
+  <div class="card"><h4>What to change</h4>
+   <p class="note">In their own words, exactly as written</p>
+   <blockquote><p>Marketing: the event could have been marketed much better; more posts, better attempts at trying to advertise the event.</p><cite>Silent Disco</cite></blockquote>
+   <blockquote><p>Even though the attendance was not what anticipated, the overall engagement was very good. Students stayed nearly the entire time</p><cite>Silent Disco &middot; on what was observed</cite></blockquote>
+  </div>
+ </div>
+</div>
+
+<div class="view" id="v4">
+ <div class="shead"><h2>Tate Time with CSE</h2><span class="tag">Every Wednesday &middot; 3 of 28 sessions surveyed so far</span></div>
+ <div class="statbar">
+ <div class="st"><span class="mono">5</span>Responses so far</div>
+ <div class="st"><span class="mono">3</span>Sessions surveyed</div>
+ <div class="st"><span class="mono">4.2</span>Overall rating</div>
+ <div class="st"><span class="mono">4.0</span>Connection to UGA</div>
+</div>
+<div class="grid">
+ <div class="qc"><div class="qh"><h4>What drew people in</h4><span class="qa">5 answers</span></div>
+  <p class="note">The question that separates a following from foot traffic</p>
+  <div class="qrow"><span class="qbar" style="width:82%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Came specifically for Tate Time</em></span><span class="qn mono">4</span></div>
+  <div class="qrow"><span class="qbar" style="width:26%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Found it while in Tate</em></span><span class="qn mono">1</span></div>
+ </div>
+ <div class="qc"><div class="qh"><h4>Who is turning up</h4><span class="qa">5 answers</span></div>
+  <p class="note">Membership in an affiliated organization</p>
+  <div class="qrow"><span class="qbar" style="width:62%;background:#1F7A6E14;border-color:#1F7A6E40"><em>Member of a CSO</em></span><span class="qn mono">3</span></div>
+  <div class="qrow"><span class="qbar" style="width:45%;background:#BA0C2F14;border-color:#BA0C2F40"><em>Not a member of any</em></span><span class="qn mono">2</span></div>
+ </div>
+</div>
+<div class="flag"><b>Early days, but two things already stand out</b>
+ <p>Four of the five came <em>specifically</em> for Tate Time rather than finding it while passing through. That is not what you would expect of a drop-in in one of the busiest buildings on campus, and it suggests the programme has a following rather than an audience of passers-by.</p>
+ <p style="margin-top:10px">Two of the five belong to no affiliated organization at all &mdash; students the office is reaching who are not already inside a CSO. That is the number worth watching as more sessions are surveyed.</p>
+ <p style="margin-top:10px">Five responses is far too few to lean on. The staff debrief records <b>110 people</b> at the 26 August session alone, and three of them responded &mdash; under 3%. The attendee emails have not gone out yet, and that is the single thing that would change it.</p></div>
+<div class="cols" style="margin-top:18px">
+ <div class="card"><h4>What was most valuable</h4>
+  <p class="note">In their own words, exactly as written</p>
+  <blockquote><p>I got to meet so many people that have heard of UGA Asura and were just interested in talking about. It was a great experience to connect to so many people and share what UGA Asura is about.</p><cite>ASURA member &middot; 26 August</cite></blockquote>
+  <blockquote><p>People just talking and building connections</p><cite>NCNW member</cite></blockquote>
+  <blockquote><p>Feeling welcomed in the space.</p><cite>Not a member of any organization</cite></blockquote>
+ </div>
+ <div class="card"><h4>What they would change</h4>
+  <p class="note">In their own words, exactly as written</p>
+  <blockquote><p>I wish I had the opportunity to learn more about the student organization hosting it, but perhaps I just did not stay long enough.</p><cite>First visit &middot; 2 September</cite></blockquote>
+  <blockquote><p>Maybe post more on social media.</p><cite>Found it while in Tate</cite></blockquote>
+  <blockquote><p>I wouldn&rsquo;t change anything. It was run perfectly and the turnout was great.</p><cite>ASURA member</cite></blockquote>
+ </div>
+</div>
+</div>
+
+<footer>Collected through Tally, 22 August to 10 September 2026. Retreat and Tate Time responses are anonymous.
+ Presidents Council forms collect names for attendance; only group totals appear here.
+ Student comments appear exactly as written. Groupings of open answers were made by reading every response.</footer>
+</div>
+<script>
+function go(b,id){document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id));window.scrollTo(0,0);}
+const pos={};
+function mv(id,d){const t=document.querySelector('#'+id+' .track'),s=t.querySelectorAll('.slide');
+ pos[id]=((pos[id]||0)+d+s.length)%s.length;s.forEach((x,i)=>x.classList.toggle('on',i===pos[id]));
+ document.getElementById(id+'n').textContent=(pos[id]+1)+' of '+s.length;}
+document.querySelectorAll('.car').forEach(c=>{c.querySelector('.slide').classList.add('on');
+ c.tabIndex=0;c.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')mv(c.id,-1);if(e.key==='ArrowRight')mv(c.id,1);});});
+</script></body></html>
